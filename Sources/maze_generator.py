@@ -25,16 +25,16 @@ class MazeGenerator:
 		while(len(self.visitedCells) != (self.mazedGrid.num_of_rows * self.mazedGrid.num_of_rows)):
 			validEdgeList = [] # this will store our edge ids (legal edges) surrounding our current cell
 			#top edge varification 
-			if (self.checkValidTopEdge(currentCell.top_edge) == 1):
+			if (self.checkValidTopEdge(currentRow, currentCol) == 1): # a source of bug. modify the method sd ot takes the co-ordinate
 				validEdgeList.append(0)
 
-			if (self.checkValidBottomEdge(currentCell.bottom_edge) == 1):
+			if (self.checkValidBottomEdge(currentRow, currentCol) == 1):
 				validEdgeList.append(1)
 
-			if (self.checkValidRightEdge(currentCell.right_edge) == 1):
+			if (self.checkValidRightEdge(currentRow, currentCol) == 1):
 				validEdgeList.append(2)
 
-			if (self.checkValidLeftEdge(currentCell.left_edge) == 1):
+			if (self.checkValidLeftEdge(currentRow, currentCol) == 1):
 				validEdgeList.append(3)
 
 			if (len(validEdgeList) == 0): # We go hunting if we are at deadend
@@ -47,6 +47,7 @@ class MazeGenerator:
 					continue # This implicitly means we are terminating this method, and done
 							# The condition in our while makes sure that we end here.
 				else:
+
 					self.visitedCells.append((currentRow, currentCol))
 					continue	
 			else:
@@ -57,12 +58,18 @@ class MazeGenerator:
 													# and discover new unvisited cell
 				if(edgeToCarveID == 0): #if we have a top edge to break
 					currentCell.top_edge = None #here we mark our edge to be broken
+
 					#Now we ipdate our current location
 					currentRow = currentRow - 1
 					currentCol = currentCol
+
 					currentCell = self.mazedGrid.list_of_rows[currentRow][currentCol] #its our newly reached cell
+					currentCell.bottom_edge = None # we do this because our actual edge objects were different, although they have the 
+													# same co-ordinates. Not doing this will never mark the crossed cell as none
+													# For example first we broke our current cell's top edge. But the cell we are about 
+													#to move into has its bottom cell object not set to null. Thats what we are doping here
 					# now we update our visited cell list
-					self.visitedCells.append(currentCell)
+					self.visitedCells.append((currentRow, currentCol))
 
 				if(edgeToCarveID == 1): #if we have a bottom edge to break
 					currentCell.bottom_edge = None #here we mark our edge to be broken
@@ -70,8 +77,9 @@ class MazeGenerator:
 					currentRow = currentRow + 1
 					currentCol = currentCol
 					currentCell = self.mazedGrid.list_of_rows[currentRow][currentCol] #its our newly reached cell
+					currentCell.top_edge = None 
 					# now we update our visited cell list
-					self.visitedCells.append(currentCell)
+					self.visitedCells.append((currentRow, currentCol))
 
 				if(edgeToCarveID == 2): #if we have a right edge to break
 					currentCell.right_edge = None #here we mark our edge to be broken
@@ -79,8 +87,9 @@ class MazeGenerator:
 					currentRow = currentRow 
 					currentCol = currentCol + 1
 					currentCell = self.mazedGrid.list_of_rows[currentRow][currentCol] #its our newly reached cell
+					currentCell.left_edge = None 
 					# now we update our visited cell list
-					self.visitedCells.append(currentCell)
+					self.visitedCells.append((currentRow, currentCol))
 
 				if(edgeToCarveID == 3): #if we have a left edge to break
 					currentCell.left_edge = None #here we mark our edge to be broken
@@ -88,8 +97,9 @@ class MazeGenerator:
 					currentRow = currentRow 
 					currentCol = currentCol - 1
 					currentCell = self.mazedGrid.list_of_rows[currentRow][currentCol] #its our newly reached cell
+					currentCell.right_edge = None 
 					# now we update our visited cell list
-					self.visitedCells.append(currentCell)
+					self.visitedCells.append((currentRow, currentCol))
 
 
 
@@ -97,53 +107,51 @@ class MazeGenerator:
 
 
 	# Helper methods
-	def checkValidTopEdge (self,topside):
-		if(topside is None):
+	def checkValidTopEdge (self,row_num, col_num):
+		if(self.mazedGrid.list_of_rows[row_num][col_num].top_edge is None):
 			return 0
-		elif(topside.edge_type == 0):
+		elif(self.mazedGrid.list_of_rows[row_num][col_num].top_edge.edge_type == 0):
 			return 0
-		else:
-			for i in range(0, len(self.visitedCells)):
-				if (topside.point_1 == self.mazedGrid.list_of_rows[visitedCells[i][0]][visitedCells[i][1]].bottom_edge.point_1\
-					and topside.point_2 == self.mazedGrid.list_of_rows[visitedCells[i][0]][visitedCells[i][1]].bottom_edge.point_2):
-					return 0
-			return 1 
-
-
-	def checkValidBottomEdge(self,downside):
-		if(downside is None):
-			return 0
-		elif(downside.edge_type == 0):
+		elif((row_num-1,col_num) in self.visitedCells):
 			return 0
 		else:
-			for i in range(0, len(self.visitedCells)):
-				if (downside.point_1 == self.mazedGrid.list_of_rows[visitedCells[i][0]][visitedCells[i][1]].top_edge.point_1\
-					and downside.point_2 == self.mazedGrid.list_of_rows[visitedCells[i][0]][visitedCells[i][1]].top_edge.point_2):
-					return 0
-			return 1 
+			return 1
+			
+				
+			
+
+
+	def checkValidBottomEdge(self,row_num, col_num):
+		if(self.mazedGrid.list_of_rows[row_num][col_num].bottom_edge is None):
+			return 0
+		elif(self.mazedGrid.list_of_rows[row_num][col_num].bottom_edge.edge_type == 0):
+			return 0
+		elif((row_num+1,col_num) in self.visitedCells):
+			return 0
+		else:
+			return 1
 		
-	def checkValidRightEdge(self,rightside):
-		if(rightside is None):
+	def checkValidRightEdge(self,row_num, col_num):
+		if(self.mazedGrid.list_of_rows[row_num][col_num].right_edge is None):
 			return 0
-		elif(rightside.edge_type == 0):
+		elif(self.mazedGrid.list_of_rows[row_num][col_num].right_edge.edge_type == 0):
 			return 0
-		else:
-			for i in range(0, len(self.visitedCells)):
-				if (rightside.point_1 == self.mazedGrid.list_of_rows[visitedCells[i][0]][visitedCells[i][1]].left_edge.point_1\
-					and rightside.point_2 == self.mazedGrid.list_of_rows[visitedCells[i][0]][visitedCells[i][1]].left_edge.point_2):
-					return 0
-			return 1 
-	def checkValidLeftEdge(self, leftside):
-		if(leftside is None):
-			return 0
-		elif(leftside.edge_type == 0):
+		elif((row_num,col_num+1) in self.visitedCells):
 			return 0
 		else:
-			for i in range(0, len(self.visitedCells)):
-				if (leftside.point_1 == self.mazedGrid.list_of_rows[visitedCells[i][0]][visitedCells[i][1]].right_edge.point_1\
-					and leftside.point_2 == self.mazedGrid.list_of_rows[visitedCells[i][0]][visitedCells[i][1]].right_edge.point_2):
-					return 0
-			return 1 
+			return 1
+
+	def checkValidLeftEdge(self,row_num, col_num):
+		if(self.mazedGrid.list_of_rows[row_num][col_num].left_edge is None):
+			return 0
+		elif(self.mazedGrid.list_of_rows[row_num][col_num].left_edge.edge_type == 0):
+			return 0
+		elif((row_num,col_num-1) in self.visitedCells):
+			return 0
+		else:
+			return 1
+		
+
 	def selectRandomCell(self):
 		seed(1)
 
@@ -156,8 +164,34 @@ class MazeGenerator:
 		#resume
 		for i in range(0, self.mazedGrid.num_of_rows):
 			for j in range (0, self.mazedGrid.num_of_cols):
-				if (((i,j) is not in self.visitedCells) and (self.giveVisitedNeighbour((i,j)) is not None)):
-					return self.mazedGrid.list_of_rows[i][j], i, j # we are returning the cell, and its row and col #
+				if((i,j) not in self.visitedCells): # This guarantees we wont have null pointer exception
+					# Now we carve the edge between our newly discovered cell and a neighbouring visited cell
+
+					#check top 
+					if ((self.mazedGrid.list_of_rows[i][j].top_edge is not None) and (self.mazedGrid.list_of_rows[i][j].top_edge.edge_type == 1)):
+						if ((i-1, j) in self.visitedCells):
+							self.mazedGrid.list_of_rows[i][j].top_edge = None 
+							self.mazedGrid.list_of_rows[i-1][j].bottom_edge = None # We have now completed the carving
+							return self.mazedGrid.list_of_rows[i][j], i, j
+					#check bottom 
+					if ((self.mazedGrid.list_of_rows[i][j].bottom_edge is not None) and (self.mazedGrid.list_of_rows[i][j].bottom_edge.edge_type == 1)):
+						if ((i+1, j) in self.visitedCells):
+							self.mazedGrid.list_of_rows[i][j].bottom_edge = None 
+							self.mazedGrid.list_of_rows[i+1][j].top_edge = None # We have now completed the carving
+							return self.mazedGrid.list_of_rows[i][j], i, j
+					#check right
+					if ((self.mazedGrid.list_of_rows[i][j].right_edge is not None) and (self.mazedGrid.list_of_rows[i][j].right_edge.edge_type == 1)):
+						if ((i, j+1) in self.visitedCells):
+							self.mazedGrid.list_of_rows[i][j].right_edge = None 
+							self.mazedGrid.list_of_rows[i][j+1].left_edge = None # We have now completed the carving
+							return self.mazedGrid.list_of_rows[i][j], i, j
+					#check left
+					if ((self.mazedGrid.list_of_rows[i][j].left_edge is not None) and (self.mazedGrid.list_of_rows[i][j].left_edge.edge_type == 1)):
+						if ((i, j-1) in self.visitedCells):
+							self.mazedGrid.list_of_rows[i][j].left_edge = None 
+							self.mazedGrid.list_of_rows[i][j-1].right_edge = None # We have now completed the carving
+							return self.mazedGrid.list_of_rows[i][j], i, j
+				
 		return None,None,None
 
 	def giveVisitedNeighbour(self, loc_of_unv_cell):
