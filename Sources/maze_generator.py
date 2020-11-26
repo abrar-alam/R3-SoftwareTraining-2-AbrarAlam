@@ -11,7 +11,7 @@ class MazeGenerator:
 		self.visitedCells = [] # This stores the (row num, colnum) tuple location of the visited cells.
 
 	def processGrid(self):
-		randomCell = self.selectRandomCell(self) # first we select a random startting cell's coordinate
+		randomCell = self.selectRandomCell() # first we select a random startting cell's coordinate
 		# Extract the row and col no.
 		currentRow = randomCell[0] # These must be updated during loop, cuz, we store these as tuple in the visited cell array
 		currentCol = randomCell[1] # These must be updated during loop, cuz, we store these as tuple in the visited cell array
@@ -41,7 +41,7 @@ class MazeGenerator:
 				#We update the our current cell as visited
 				#self.visitedCells.append((currentRow, currentCol)) # We store our current cell's row and col # in the visited cell
 
-				currentCell, currentRow, currentCol = self.huntTheCell(self) # a method we will define later, this will 
+				currentCell, currentRow, currentCol = self.huntTheCell() # a method we will define later, this will 
 													#return a cell if found, otherwise return None	
 				if (currentCell is None): # Means no more unvisited cell is found
 					continue # This implicitly means we are terminating this method, and done
@@ -194,7 +194,6 @@ class MazeGenerator:
 				
 		return None,None,None
 
-	def giveVisitedNeighbour(self, loc_of_unv_cell):
 		
 
 
