@@ -1,0 +1,91 @@
+int motor1_A = 11; //Bottom motor
+int motor1_B = 10;
+
+int motor2_A = 6;   //Top motor
+int motor2_B = 5;
+
+int pot = A0;
+
+int forward_B = 1; //Dip switch 1 (from left side)
+int backward_B = 2;//Dip switch 2 
+int left_B = 3;
+int right_B = 4;
+
+
+double speed;
+
+  
+void setup()
+{
+  Serial.begin(115200);
+  
+  // Motor Pins
+  pinMode(motor1_A, OUTPUT);
+  pinMode(motor1_B, OUTPUT);
+  pinMode(motor2_A, OUTPUT);
+  pinMode(motor2_B, OUTPUT);
+  
+  // Controls Pins
+  pinMode(pot, INPUT);
+  pinMode(forward_B, INPUT_PULLUP);
+  pinMode(backward_B, INPUT_PULLUP);
+  pinMode(left_B, INPUT_PULLUP);
+  pinMode(right_B, INPUT_PULLUP);
+  
+}
+
+void loop()
+{
+  // Map Potentiometer input from ADC to PWM values
+  speed = map(analogRead(pot), 1, 1023, 1, 255); 
+ 
+  // Check which switch is on and carry out movement based on that info
+  if (digitalRead(forward_B) == LOW){
+    forward(speed);
+  }
+  else if (digitalRead(backward_B) == LOW) {
+    backward(speed);
+  }
+  else if (digitalRead(left_B) == LOW) {
+    left(speed);
+  }
+  else if (digitalRead(right_B) == LOW) {
+	right(speed);
+  }
+  else {
+	stop();
+  }
+ 
+}
+
+// Move Forward Both Motors
+void forward(double pwm) {
+  analogWrite(motor1_A, pwm);
+  analogWrite(motor2_A, pwm);
+}
+
+// Move Backward Both Motors
+void backward(double pwm) {
+  analogWrite(motor1_B, pwm);
+  analogWrite(motor2_B, pwm);
+}
+
+// Move right Motor Forward and left Motor Backwards
+void left(double pwm) {
+  analogWrite(motor1_A, pwm);
+  analogWrite(motor2_B, pwm);
+}
+
+// Move left Motor Forward and right Motor Backwards
+void right(double pwm) {
+  analogWrite(motor1_B, pwm);
+  analogWrite(motor2_A, pwm);
+}
+
+// Stop All Motors
+void stop() {
+  digitalWrite(motor1_A, LOW);
+  digitalWrite(motor1_B, LOW);
+  digitalWrite(motor2_A, LOW);
+  digitalWrite(motor2_B, LOW);
+}
